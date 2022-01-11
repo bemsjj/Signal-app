@@ -26,7 +26,7 @@ function GestionUsers(props) {
             method: 'GET',
             headers: { 'Content-Type': 'application/json', 'Authorization' : "Bearer "+token},
         };
-        fetch('http://signalproblem-app.herokuapp.com/users', requestOptions).then(response => response.json())
+        fetch('https://signalproblem-app.herokuapp.com/users', requestOptions).then(response => response.json())
         .then((res) => {
           let data = res._embedded.users;
           console.log(data,"fffffff");

@@ -19,7 +19,7 @@ import { useHistory } from "react-router-dom";
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: username,password : password})
         };
-        const response = await fetch('http://signalproblem-app.herokuapp.com/login', requestOptions);
+        const response = await fetch('https://signalproblem-app.herokuapp.com/login', requestOptions);
         const data = await response.json();
         console.log(data);
         
