@@ -7,8 +7,8 @@ import { useHistory } from "react-router-dom";
 
  function Login(props) {
 
-    const [username, setUsername] = useState('test');
-    const [password, setPassword] = useState('test');
+    const [username, setUsername] = useState('Region2');
+    const [password, setPassword] = useState('password2');
     const [redirect, setRedirect] = useState('');
     const [toRedirect, setToRedirect] = useState('');
     let history = useHistory();

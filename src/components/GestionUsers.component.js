@@ -4,16 +4,20 @@ import { Redirect } from 'react-router'
 import {connect} from 'react-redux';
 import Menus from './menus.component';
 import { useHistory } from "react-router-dom";
+import axios from 'axios';
 
 function GestionUsers(props) {
 
       const [toRedirect, setToRedirect] = useState('');
-      const [listUsers, setListUsers] = useState('');
+      const [listUsers, setListUsers] = useState([]);
+      const [reloadDatas, setReloadDatas] = useState([]);
 
       
       const isLogged = props.isAuth;
       let history = useHistory();
       const token = props.isAuth;
+      const [token_stored, setToken] = useState(token);
+
       console.log(token,'token');
       
        useEffect(() => {
@@ -26,24 +30,38 @@ function GestionUsers(props) {
             method: 'GET',
             headers: { 'Content-Type': 'application/json', 'Authorization' : "Bearer "+token},
         };
-        fetch('https://signalproblem-app.herokuapp.com/users', requestOptions).then(response => response.json())
-        .then((res) => {
-          let data = res._embedded.users;
-          console.log(data,"fffffff");
-          setListUsers(data)
-          console.log(listUsers,"eeeeeeee");
-        })
+          const fetchData = async () => {
+            const result = await fetch('https://signalproblem-app.herokuapp.com/users', requestOptions);
+            const data = await result.json();
+            setListUsers(data._embedded.users);
+          };
+
+          fetchData();
         }
+      },[reloadDatas]);
 
-      },[]);
-
-      function TextDecoderStream(data){
-        alert(test)
-      }
      function Edit(data){
-       console.log(props);
+        console.log(props);
         props.setUsers(data)
         history.push("/edit-user");
+      }
+
+      async function Supprimer(val){
+        const requestOptions = {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json', 'Authorization' : "Bearer "+token_stored},
+          };
+        const user = await fetch('https://signalproblem-app.herokuapp.com/users/search/findByUsername?username='+val.username, requestOptions);
+        const dataUser = await user.json();
+        let linkDelete = dataUser._links.self.href;
+
+        const requestOptions2 = {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json', 'Authorization' : "Bearer "+token_stored},
+          };
+        const userDeleted = await fetch(linkDelete, requestOptions2);
+        setReloadDatas(val)
+
       }
 
       function goAdd(e){
@@ -53,6 +71,11 @@ function GestionUsers(props) {
       if(isLogged == false){
         return <Redirect to={toRedirect} />;
       }
+
+      if(listUsers != ""){
+        console.log(listUsers);
+      }
+      
       // console.log(props.users,'usersss');
         return (
             <div className="container container_page">
@@ -73,33 +96,19 @@ function GestionUsers(props) {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                    <th scope="row">1</th>
-                    <td>Mark</td>
-                    <td>Vakinakaratra</td>
-                    <td>
-                        <button onClick={() => Edit('test')} className="btn btn-info mr-2">Modifier</button>
-                        <button className="btn btn-danger">Supprimer</button>
-                    </td>
-                    </tr>
-                    <tr>
-                    <th scope="row">2</th>
-                    <td>Jacob</td>
-                    <td>Vakinakaratra</td>
-                    <td>
-                        <button onClick={Edit.bind(this)} className="btn btn-info mr-2">Modifier</button>
-                        <button className="btn btn-danger">Supprimer</button>
-                    </td>
-                    </tr>
-                    <tr>
-                    <th scope="row">3</th>
-                    <td>Larry</td>
-                    <td>Vakinakaratra</td>
-                    <td>
-                        <button onClick={Edit.bind(this)} className="btn btn-info">Modifier</button>
-                        <button className="btn btn-danger">Supprimer</button>
-                    </td>
-                    </tr>
+                  {listUsers.map((value,index) =>{
+                      return(
+                      <tr>
+                        <th scope="row">1</th>
+                        <td>{value.username}</td>
+                        <td>{value.nomRegion}</td>
+                        <td>
+                            <button onClick={() => Edit(value.username)} className="btn btn-info mr-2">Modifier</button>
+                            <button onClick={() => Supprimer(value)} className="btn btn-danger">Supprimer</button>
+                        </td>
+                      </tr>
+                      )
+                    })}
                 </tbody>
                 </table>
               </div>
@@ -115,7 +124,7 @@ const states = (state) => {
 
 const setUsers = (dispatch) => {
   return {
-    setUsers : (val) => {dispatch({type : 'SET_USER_LISTS',value : val})}
+    setUsers : (val) => {dispatch({type : 'SET_USER_DATA',value : val})}
   } 
 }
 
